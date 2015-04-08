@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- WARNING: Eclipse auto-generated file.
+              Any modifications will be overwritten.
+              To include a user specific buildfile here, simply create one in the same
+              directory with the processing instruction <?eclipse.ant.import?>
+              as the first entry and export the buildfile again. -->
+<project basedir="../" default="JUnitAllTests" name="">
+	<property environment="env" />
+
+	<!-- =============== shiphome related properties ================ -->
+	<property name="user.locale" value="de" />
+	<!-- <property name="user.locale" value="${testlocale}" /> -->
+	<property name="host.name" value="slc00bnd.us.oracle.com" />
+	<property name="host.port" value="7001" />
+	
+	<property name="login.name" value="weblogic" />
+	<property name="login.pass" value="welcome1" />
+	<property name="testplanid" value="" />
+	<property name="browser" value="FF27" />
+	<property name="project.name" value="mapviewer" />
+
+	<property name="tomcat.name" value="sgtecmpc.cn.oracle.com" />
+	<property name="tomcat.port" value="8081" />
+	
+	<property name="data.dir" value="testdata/${project.name}" />
+	<property name="gadget.dir" value="testdata/${gadget.name}" />
+	<property name="community.dir" value="testdata/${community.name}" />
+	
+	<property name="junit.report.dir" value="${basedir}/reports/${project.name}/${user.locale}" />
+	<property name="junit.screenshot.dir" value="${junit.report.dir}/screenshots" />
+	<property name="junit.bin.dir" value="${basedir}/bin" />
+	<property name="junit.lib.dir" value="${basedir}/lib" />
+	<property name="junit.src.dir" value="${basedir}/src" />
+	
+
+	<path id="selenium.classpath">
+		<pathelement location="${basedir}" />
+		<pathelement location="${junit.bin.dir}" />
+		<pathelement location="${project.name}/properties" />
+		<fileset dir="${junit.lib.dir}">
+			<include name="*.jar" />
+		</fileset>
+	</path>
+
+	<path id="${basedir}/src">
+		<pathelement location="${junit.src.dir}" />
+		<pathelement location="${project.name}" />
+	</path>
+
+	<target name="JUnitAllTests">
+		<antcall target="compilesrc" />
+		<delete dir="${junit.report.dir}" />
+		<mkdir dir="${junit.report.dir}" />
+		<mkdir dir="${junit.screenshot.dir}" />
+		<junit fork="yes" printsummary="withOutAndErr">
+			<sysproperty key="hostname" value="${host.name}" />
+			<sysproperty key="port" value="${host.port}" />
+			
+			<sysproperty key="tomcatname" value="${tomcat.name}" />
+			<sysproperty key="tomcatport" value="${tomcat.port}" />
+			<sysproperty key="loginname" value="${login.name}" />
+			<sysproperty key="loginpass" value="${login.pass}" />
+			<sysproperty key="datadir" value="${data.dir}" />
+			<sysproperty key="gadgetdir" value="${gadget.dir}" />
+			<sysproperty key="communitydir" value="${community.dir}" />
+			<sysproperty key="locale" value="${user.locale}" />
+			<sysproperty key="pwd" value="${basedir}" />
+			
+			<sysproperty key="log_file_name" value="${junit.report.dir}/${project.name}.log" />
+
+			<sysproperty key="screenshotsDir" value="${junit.screenshot.dir}" />
+
+			<sysproperty key="testplanid" value="${testplanid}" />
+			<sysproperty key="browser" value="${browser}" />
+
+			<classpath refid="selenium.classpath" />
+			<formatter classname="org.apache.tools.ant.taskdefs.optional.junit.XMLJUnitResultFormatter"/>
+			<!--<formatter type="xml" />-->
+			<batchtest fork="yes" todir="${junit.report.dir}">
+				<fileset dir="${junit.bin.dir}">
+					<include name="**/*SanityTestSuite*" />
+				</fileset>
+			</batchtest>
+		</junit>
+		<antcall target="junitreport" />
+		<!--
+    	<antcall target="reportTRS"/>
+    	-->
+	</target>
+
+	<target name="junitreport">
+		<junitreport todir="${junit.report.dir}">
+			<fileset dir="${junit.report.dir}">
+				<include name="TEST-*.xml" />
+			</fileset>
+			<report format="frames" styledir="${basedir}" todir="${junit.report.dir}" />
+		</junitreport>
+	</target>
+
+	<target name="reportTRS">
+		<java classname="com.oracle.sgt.webdriver.util.TestResultReporter" fork="true" failonerror="true">
+			<classpath refid="selenium.classpath" />
+		</java>
+	</target>
+
+	<target name="compilesrc">
+		<delete dir="${junit.bin.dir}" />
+		<mkdir dir="${junit.bin.dir}" />
+		<javac srcdir="${junit.src.dir}" destdir="${junit.bin.dir}" encoding="utf-8">
+			<classpath>
+				<fileset dir="${junit.lib.dir}">
+					<include name="*.jar" />
+				</fileset>
+			</classpath>
+		</javac>
+		<javac srcdir="${basedir}/${project.name}" destdir="${junit.bin.dir}" encoding="utf-8">
+			<classpath>
+				<pathelement location="${junit.bin.dir}" />
+				<fileset dir="${junit.lib.dir}">
+					<include name="*.jar" />
+				</fileset>
+			</classpath>
+		</javac>
+		<antcall target="copyPros" />
+	</target>
+
+	<target name="copyPros">
+		<copy todir="${junit.bin.dir}">
+			<fileset dir="${junit.src.dir}">
+				<exclude name="**/*.java" />
+			</fileset>
+		</copy>
+	</target>
+
+	<target name="copyAntJunitJar">
+		<copy file="${junit.lib.dir}/ant-junit-1.8.4.jar" todir="${ant.home}/lib" overwrite="true" />
+	</target>
+</project>
